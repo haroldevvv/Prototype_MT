@@ -1,24 +1,18 @@
 import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import os
 
 # ==========================================================
 # Load Model Function
 # ==========================================================
 @st.cache_resource
 def load_model():
-    # Path to your trained local model
-    model_path = "C:\Users\admin\Desktop\Prototype_MT\mBART50_augmented_direct\runs\rin_en_3.5k_15epochs_mbart50_run-20251006-115936/final_model"
+    # Hugging Face Hub model ID
+    model_path = "haroldevvv/my-mbart50-translation-model"
 
-    # Ensure path exists
-    if not os.path.isdir(model_path):
-        st.error(f" Model directory not found: {model_path}")
-        st.stop()
-
-    # Load tokenizer & model (local only to avoid HF Hub validation error)
-    tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_path, local_files_only=True)
+    # Load tokenizer & model from Hugging Face
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
 
     # Auto-select device (GPU if available)
     device = "cuda" if torch.cuda.is_available() else "cpu"

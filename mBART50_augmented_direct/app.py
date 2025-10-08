@@ -1,55 +1,82 @@
 import streamlit as st
-from transformers import pipeline
+import torch
+from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
+import time
 
-# ==========================================================
-# Load Model Function (with src/tgt language setup)
-# ==========================================================
-@st.cache_resource
-def load_model():
-    """
-    Load the translation pipeline from Hugging Face with language codes.
-    """
-    translator = pipeline(
-        "translation",
-        model="haroldevvv/my-mbart50-translation-model",
-        src_lang="rin_Latn",  
-        tgt_lang="en_XX"       # Target = English
-    )
-    return translator
-
-
-# ==========================================================
-# Initialize the Translator
-# ==========================================================
-translator = load_model()
-
-
-# ==========================================================
-# Streamlit Interface
-# ==========================================================
-st.title("🌐 Rinconada → English Translator (mBART50)")
-
-st.markdown(
-    """
-    This prototype uses a fine-tuned **mBART50** model to translate text  
-    from **Rinconada** to **English**, powered by Hugging Face hosted inference.
-    """
+# ============================
+#  Page Config
+# ============================
+st.set_page_config(
+    page_title="Rinconada → English Translator",
+    page_icon="🌐",
+    layout="centered"
 )
 
-# Input text area
-rin_text = st.text_area("Enter Rinconada text:", height=150)
+# ============================
+#  Model Loader (cached)
+# ============================
+@st.cache_resource(show_spinner=True)
+def load_model():
+    try:
+        model_name = "haroldevvv/my-mbart50-translation-model"
+        tokenizer = MBart50TokenizerFast.from_pretrained(model_name)
+        model = MBartForConditionalGeneration.from_pretrained(model_name)
+        model.eval()
+        return tokenizer, model
+    except Exception as e:
+        st.error(f" Failed to load model: {e}")
+        st.stop()
 
-# Translate button
+# ============================
+#  UI Header
+# ============================
+st.title("🌐 Rinconada → English Translator (mBART50)")
+st.markdown(
+    "Translate Rinconada text into English using a fine-tuned **mBART50** model."
+)
+
+# ============================
+#  Load Model
+# ============================
+tokenizer, model = load_model()
+
+# ============================
+#  Input Section
+# ============================
+text = st.text_area("Enter Rinconada text:", placeholder="e.g. Kamusta ka na?")
+
+# ============================
+#  Translation Logic
+# ============================
 if st.button("Translate"):
-    if rin_text.strip() == "":
-        st.warning(" Please enter some text to translate.")
+    if not text.strip():
+        st.warning(" Please enter some text before translating.")
     else:
-        with st.spinner("Translating... Please wait."):
-            try:
-                result = translator(rin_text, max_length=200)
-                translation = result[0]["translation_text"]
+        with st.spinner("Translating... please wait"):
+            start_time = time.time()
 
-                st.subheader("📝 English Translation:")
-                st.success(translation)
+            try:
+                forced_bos = model.config.forced_bos_token_id  # en_XX from training
+                inputs = tokenizer(text, return_tensors="pt")
+
+                # Move to GPU if available
+                if torch.cuda.is_available():
+                    model.to("cuda")
+                    inputs = {k: v.to("cuda") for k, v in inputs.items()}
+
+                outputs = model.generate(
+                    **inputs,
+                    forced_bos_token_id=forced_bos,
+                    max_length=200,
+                    num_beams=5,
+                    early_stopping=True
+                )
+
+                translation = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                elapsed = time.time() - start_time
+
+                st.success(" Translation complete!")
+                st.text_area("English Translation:", value=translation, height=150)
+
             except Exception as e:
-                st.error(f" Translation failed: {str(e)}")
+                st.error(f" Translation failed: {e}")

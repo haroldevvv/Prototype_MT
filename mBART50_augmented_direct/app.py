@@ -43,7 +43,7 @@ tokenizer, model = load_model()
 # ============================
 #  Input Section
 # ============================
-text = st.text_area("Enter Rinconada text:", placeholder="e.g. Kamusta ka na?")
+text = st.text_area("Enter Rinconada text:")
 
 # ============================
 #  Translation Logic

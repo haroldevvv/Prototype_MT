@@ -2,15 +2,19 @@ import streamlit as st
 from transformers import pipeline
 
 # ==========================================================
-# Load Model Function (using hosted inference)
+# Load Model Function (with src/tgt language setup)
 # ==========================================================
 @st.cache_resource
 def load_model():
     """
-    Load the translation pipeline using the Hugging Face Hub’s hosted inference API.
-    This avoids downloading the full 2.47 GB model into Streamlit Cloud.
+    Load the translation pipeline from Hugging Face with language codes.
     """
-    translator = pipeline("translation", model="haroldevvv/my-mbart50-translation-model")
+    translator = pipeline(
+        "translation",
+        model="haroldevvv/my-mbart50-translation-model",
+        src_lang="rin_Latn",  
+        tgt_lang="en_XX"       # Target = English
+    )
     return translator
 
 

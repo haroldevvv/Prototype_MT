@@ -1,0 +1,16 @@
+# Python cache and environment
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Model and run files
+runs/
+*.pt
+*.bin
+*.safetensors
+*.pkl
+
+# Misc
+.DS_Store
+*.log

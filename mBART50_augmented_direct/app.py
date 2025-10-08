@@ -9,7 +9,7 @@ import os
 @st.cache_resource
 def load_model():
     # Path to your trained local model
-    model_path = "/home/hsalvador/OCT_2/real_synthetic/runs/rin_en_3.5k_15epochs_mbart50_run-20251006-115936/final_model"
+    model_path = "C:\Users\admin\Desktop\Prototype_MT\mBART50_augmented_direct\runs\rin_en_3.5k_15epochs_mbart50_run-20251006-115936/final_model"
 
     # Ensure path exists
     if not os.path.isdir(model_path):

@@ -2,6 +2,7 @@ import streamlit as st
 import torch
 import time
 import gc
+import psutil
 from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
 
 # ============================
@@ -14,15 +15,42 @@ st.set_page_config(
 )
 
 # ============================
-#  Cache Control
+#  Sidebar: Maintenance & Memory Monitor
 # ============================
-if st.sidebar.button(" Clear Cache and Restart"):
-    st.cache_resource.clear()
-    st.cache_data.clear()
-    try:
-        st.rerun()
-    except AttributeError:
-        st.experimental_rerun()
+
+def smart_reset(threshold_mb: int = 1500):
+    """
+    Smart memory management button.
+    - If memory > threshold_mb: clear cache & restart.
+    - Else: unload model only.
+    """
+    process = psutil.Process()
+    mem_usage_mb = process.memory_info().rss / 1024 / 1024  # MB
+
+    st.sidebar.subheader(" Resource Monitor")
+    st.sidebar.write(f💾 RAM Usage: {mem_usage_mb:.0f} MB")
+
+    if torch.cuda.is_available():
+        gpu_mem = torch.cuda.memory_allocated() / 1024 / 1024
+        st.sidebar.write(f" GPU Memory: {gpu_mem:.0f} MB")
+
+    if st.sidebar.button(" Smart Reset"):
+        if mem_usage_mb > threshold_mb:
+            st.sidebar.warning("High memory usage detected — clearing cache and restarting...")
+            st.cache_resource.clear()
+            st.cache_data.clear()
+            st.rerun()
+        else:
+            try:
+                del model
+                del tokenizer
+            except NameError:
+                pass
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            st.sidebar.success("Model unloaded. Cache kept for faster reloads.")
+
 
 # ============================
 #  Model Loader (cached)
@@ -37,21 +65,29 @@ def load_model():
         model.to("cuda")
     return tokenizer, model
 
+
 # ============================
 #  UI Header
 # ============================
 st.title("🌐 Rinconada → English Translator (mBART50)")
 st.markdown("Translate Rinconada text into English using a fine-tuned **mBART50** model.")
 
+
 # ============================
 #  Load Model
 # ============================
-tokenizer, model = load_model()
+try:
+    tokenizer, model = load_model()
+except Exception as e:
+    st.error(f" Failed to load model: {e}")
+    st.stop()
+
 
 # ============================
 #  Input Section
 # ============================
 text = st.text_area("Enter Rinconada text:")
+
 
 # ============================
 #  Translation Logic
@@ -85,13 +121,11 @@ if st.button("Translate"):
                 st.text_area("English Translation:", value=translation, height=150)
 
             except Exception as e:
-                st.error(f"Translation failed: {e}")
+                st.error(f" Translation failed: {e}")
 
-# Optional memory release
-if st.sidebar.button("Unload Model (Free Memory)"):
-    del model
-    del tokenizer
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    st.success("Model unloaded. Refresh to reload.")
+
+# ============================
+#  Sidebar Smart Reset
+# ============================
+st.sidebar.header("Maintenance")
+smart_reset(threshold_mb=1500)

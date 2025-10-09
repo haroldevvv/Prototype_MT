@@ -34,7 +34,7 @@ def smart_reset(threshold_mb: int = 1500):
         gpu_mem = torch.cuda.memory_allocated() / 1024 / 1024
         st.sidebar.write(f" GPU Memory: {gpu_mem:.0f} MB")
 
-    if st.sidebar.button(" Smart Reset"):
+    if st.sidebar.button("⚙️ Smart Reset"):
         if mem_usage_mb > threshold_mb:
             st.sidebar.warning("High memory usage detected — clearing cache and restarting...")
             st.cache_resource.clear()

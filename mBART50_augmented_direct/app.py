@@ -16,10 +16,13 @@ st.set_page_config(
 # ============================
 #  Cache Control
 # ============================
-if st.sidebar.button("🧹 Clear Cache and Restart"):
+if st.sidebar.button(" Clear Cache and Restart"):
     st.cache_resource.clear()
     st.cache_data.clear()
-    st.experimental_rerun()
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
 
 # ============================
 #  Model Loader (cached)

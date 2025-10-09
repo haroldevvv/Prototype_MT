@@ -28,7 +28,7 @@ def smart_reset(threshold_mb: int = 1500):
     mem_usage_mb = process.memory_info().rss / 1024 / 1024  # MB
 
     st.sidebar.subheader(" Resource Monitor")
-    st.sidebar.write(f💾 RAM Usage: {mem_usage_mb:.0f} MB")
+    st.sidebar.write(f" RAM Usage: {mem_usage_mb:.0f} MB")
 
     if torch.cuda.is_available():
         gpu_mem = torch.cuda.memory_allocated() / 1024 / 1024

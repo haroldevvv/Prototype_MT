@@ -14,45 +14,37 @@ from transformers import (
     DataCollatorForSeq2Seq,
     EarlyStoppingCallback
 )
-# ========= Force GPU 1 =========
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# ========= NLTK setup for METEOR =========
 nltk.download("wordnet")
 nltk.download("omw-1.4")
 
-# ========= Global Config =========
 file_path = "/ThesisMT/Prototype_MT/mBART50_augmented_direct/mBART50_direct_augmented.csv"
 model_name = "facebook/mbart-large-50-many-to-many-mmt"
 
-# ========= Clear GPU cache to avoid fragmentation =========
 torch.cuda.empty_cache()
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.6,max_split_size_mb:128"
 
-# ========= Language settings =========
 # Rinconada: not in mBART-50 vocab → no special token
 # English: supported → must use "en_XX"
 TGT_LANG = "en_XX"
 
-# ========= Tokenizer =========
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.tgt_lang = TGT_LANG
 
-# ========= Load Model =========
 model = AutoModelForSeq2SeqLM.from_pretrained(
     model_name,
-    #device_map="auto",                # automatic CPU/GPU layer placement
+    #device_map="auto",                
     offload_folder="/tmp/mbart50_offload",
     #torch_dtype=torch.float16
 )
 model.config.use_cache = False
 
-# Force English BOS token during decoding
 if hasattr(tokenizer, "lang_code_to_id"):
     model.config.forced_bos_token_id = tokenizer.lang_code_to_id[TGT_LANG]
 
-# ========= Dataset Preparation =========
 def prepare_dataset(file_path, tokenizer):
     df = pd.read_csv(file_path)
     assert "rin" in df.columns and "eng" in df.columns, "CSV must have 'rin' and 'eng' columns!"
@@ -68,7 +60,6 @@ def prepare_dataset(file_path, tokenizer):
             truncation=True,
             max_length=128
         )
-
         # English → target
         with tokenizer.as_target_tokenizer():
             labels = tokenizer(
@@ -78,7 +69,6 @@ def prepare_dataset(file_path, tokenizer):
                 max_length=128
             )["input_ids"]
 
-        # Replace pad token ids with -100
         labels = [(l if l != tokenizer.pad_token_id else -100) for l in labels]
         model_inputs["labels"] = labels
         return model_inputs
@@ -92,7 +82,6 @@ def prepare_dataset(file_path, tokenizer):
 
     return tokenized_dataset.train_test_split(test_size=0.1, seed=42)
 
-# ========= Metrics =========
 bleu = evaluate.load("sacrebleu")
 meteor = evaluate.load("meteor")
 rouge = evaluate.load("rouge")
@@ -119,7 +108,6 @@ def compute_metrics(eval_pred):
         "rougeLsum": rouge_result["rougeLsum"],
     }
 
-# ========= Data Collator =========
 custom_data_collator = DataCollatorForSeq2Seq(
     tokenizer,
     model=model,
@@ -128,7 +116,6 @@ custom_data_collator = DataCollatorForSeq2Seq(
     label_pad_token_id=-100
 )
 
-# ========= Custom Trainer =========
 class CustomSeq2SeqTrainer(Seq2SeqTrainer):
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.pop("labels")
@@ -173,11 +160,11 @@ def main():
         weight_decay=0.01,
         label_smoothing_factor=0.1,
         predict_with_generate=True,
-        generation_max_length=64,
+        generation_max_length=128,
         generation_num_beams=5,
         logging_strategy="steps",
         logging_steps=50,
-        fp16=True,  # enable fp16 for GPU efficiency
+        fp16=True,  
         gradient_checkpointing=True,
         optim="adafactor",
         dataloader_num_workers=2,
@@ -205,7 +192,7 @@ def main():
     trainer.save_model(final_model_dir)
     tokenizer.save_pretrained(final_model_dir)
 
-    print(f"Training complete! Final model saved at {final_model_dir}")
+    print(f"Training completed! Final model saved at {final_model_dir}")
     print(f"View logs with: tensorboard --logdir {log_dir}")
 
 if __name__ == "__main__":

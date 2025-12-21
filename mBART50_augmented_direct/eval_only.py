@@ -17,14 +17,13 @@ from transformers.utils import logging as hf_logging
 hf_logging.set_verbosity_error()
 
 # ========= Config =========
-FILE_PATH = "/home/hsalvador/OCT_2/real_synthetic/mBART50_direct_real&synthetic.csv"
-MODEL_DIR = "/home/hsalvador/OCT_2/real_synthetic/runs/rin_en_3.5k_15epochs_mbart50_run-20251006-115936/final_model"
+FILE_PATH = "/ThesisMT/Prototype_MT/mBART50_augmented_direct/rin_en_8.5k_augmented_mBART50.csv"
+MODEL_DIR = "/ThesisMT/Prototype_MT/mBART50_augmented_direct/runs/rin_en_8.5k_15epochs_mbart50_run-20251006-115936/final_model"
 
-use_cpu = False   # 🔧 Switch here (True = CPU eval, False = GPU eval)
+use_cpu = False   # Switch here (True = CPU eval, False = GPU eval)
 
 # English language code for mBART50
 TGT_LANG = "en_XX"
-
 
 # ========= Dataset preparation =========
 def prepare_dataset(file_path, tokenizer):
@@ -65,7 +64,6 @@ def prepare_dataset(file_path, tokenizer):
     )
 
     return tokenized_dataset.train_test_split(test_size=0.1, seed=42)
-
 
 # ========= Metrics =========
 bleu = evaluate.load("sacrebleu")
@@ -148,7 +146,6 @@ def evaluate_model(model_dir, eval_dataset, model_name="mBART50 Rin→Eng", tgt_
     for k, v in results.items():
         print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
     return results
-
 
 # ========= Run =========
 if __name__ == "__main__":

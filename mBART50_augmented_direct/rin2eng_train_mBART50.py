@@ -23,7 +23,7 @@ nltk.download("wordnet")
 nltk.download("omw-1.4")
 
 # ========= Global Config =========
-file_path = "/home/hsalvador/OCT_2/real_synthetic/mBART50_direct_real&synthetic.csv"
+file_path = "/ThesisMT/Prototype_MT/mBART50_augmented_direct/mBART50_direct_augmented.csv"
 model_name = "facebook/mbart-large-50-many-to-many-mmt"
 
 # ========= Clear GPU cache to avoid fragmentation =========
@@ -149,7 +149,7 @@ def main():
     train_dataset = split_dataset["train"]
     eval_dataset = split_dataset["test"]
 
-    experiment_name = "rin_en_3.5k_10epochs_mbart50"
+    experiment_name = "rin_en_8.5k_15epochs_mbart50"
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir = os.path.join("./runs", f"{experiment_name}_run-{timestamp}")
     output_dir = os.path.join(run_dir, "checkpoints")
@@ -207,7 +207,6 @@ def main():
 
     print(f"Training complete! Final model saved at {final_model_dir}")
     print(f"View logs with: tensorboard --logdir {log_dir}")
-
 
 if __name__ == "__main__":
     main()

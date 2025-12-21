@@ -4,19 +4,13 @@ import time
 import gc
 from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
 
-# ============================
-#  Page Config
-# ============================
 st.set_page_config(
     page_title="Rinconada → English Translator",
     page_icon="🌐",
     layout="centered"
 )
 
-# ============================
-#  Cache Control
-# ============================
-if st.sidebar.button("🧹 Clear Cache and Restart"):
+if st.sidebar.button("Clear Cache and Restart"):
     st.cache_resource.clear()
     st.cache_data.clear()
     try:
@@ -24,10 +18,6 @@ if st.sidebar.button("🧹 Clear Cache and Restart"):
     except AttributeError:
         st.experimental_rerun()
 
-
-# ============================
-#  Model Loader (cached)
-# ============================
 @st.cache_resource(show_spinner=True)
 def load_model():
     model_name = "haroldevvv/my-mbart50-translation-model"
@@ -38,25 +28,13 @@ def load_model():
         model.to("cuda")
     return tokenizer, model
 
-# ============================
-#  UI Header
-# ============================
-st.title("🌐 Rinconada → English Translator (mBART50)")
+st.title("🌐 Rinconada → English Translator")
 st.markdown("Translate Rinconada text into English using a fine-tuned **mBART50** model.")
 
-# ============================
-#  Load Model
-# ============================
 tokenizer, model = load_model()
 
-# ============================
-#  Input Section
-# ============================
 text = st.text_area("Enter Rinconada text:")
 
-# ============================
-#  Translation Logic
-# ============================
 if st.button("Translate"):
     if not text.strip():
         st.warning("Please enter some text before translating.")
@@ -88,7 +66,6 @@ if st.button("Translate"):
             except Exception as e:
                 st.error(f"Translation failed: {e}")
 
-# Optional memory release
 if st.sidebar.button("Unload Model (Free Memory)"):
     del model
     del tokenizer

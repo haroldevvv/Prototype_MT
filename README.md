@@ -37,35 +37,31 @@ Make sure you have the following installed:
 
 ##  Installation
 
-### Clone the repository
+### 1. Clone the repository
 
 ```
 git clone https://github.com/haroldevvv/Prototype_MT.git
 cd Prototype_MT/mBART50_augmented_direct
 ```
-### Create a virtual environment (recommended)
+### 2. Create a virtual environment (recommended)
 
 ```bash
 python -m venv venv
 ```
 
-### Activate it 
+### 3. Activate it 
 For Windows:
 ```venv\Scripts\activate```
 For macOS/Linux:
 ```source venv/bin/activate```
 
-### Install dependencies
+### 4. Install dependencies
 
 ```pip install streamlit torch transformers sentencepiece```
 
-### Run the application 
+### 5. Run the application 
 
 ```streamlit run app.py```
 
-### Open it in your localhost 
+### 6. Open it in your localhost 
 
-
-
-git clone https://github.com/haroldevvv/Prototype_MT.git
-cd Prototype_MT/mBART50_augmented_direct

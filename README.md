@@ -65,3 +65,6 @@ python -m venv venv
 
 ### 6. Open it in your localhost 
 
+Run it in your browser at 
+```http://localhost:8501``` 
+or whatever link appears.

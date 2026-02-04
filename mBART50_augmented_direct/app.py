@@ -42,7 +42,6 @@ if st.button("Translate"):
         with st.spinner("Translating... please wait"):
             start_time = time.time()
             try:
-                forced_bos = model.config.forced_bos_token_id
                 inputs = tokenizer(text, return_tensors="pt")
 
                 if torch.cuda.is_available():
@@ -51,7 +50,7 @@ if st.button("Translate"):
                 with torch.no_grad():
                     outputs = model.generate(
                         **inputs,
-                        forced_bos_token_id=forced_bos,
+                        decoder_start_token_id=model.config.decoder_start_token_id,
                         max_length=200,
                         num_beams=5,
                         early_stopping=True
@@ -60,7 +59,7 @@ if st.button("Translate"):
                 translation = tokenizer.decode(outputs[0], skip_special_tokens=True)
                 elapsed = time.time() - start_time
 
-                st.success(f" Translation complete! ({elapsed:.2f}s)")
+                st.success(f"Translation complete! ({elapsed:.2f}s)")
                 st.text_area("English Translation:", value=translation, height=150)
 
             except Exception as e:

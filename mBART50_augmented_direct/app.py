@@ -58,7 +58,7 @@ if st.button("Translate"):
                         **inputs,
                         forced_bos_token_id=tokenizer.lang_code_to_id[TGT_LANG],
                         max_length=128,
-                        num_beams=5,
+                        num_beams=3,
                         early_stopping=True
                     )
 

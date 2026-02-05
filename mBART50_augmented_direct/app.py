@@ -10,6 +10,8 @@ st.set_page_config(
     layout="centered"
 )
 
+TGT_LANG = "en_XX"
+
 if st.sidebar.button("Clear Cache and Restart"):
     st.cache_resource.clear()
     st.cache_data.clear()
@@ -24,14 +26,18 @@ def load_model():
     tokenizer = MBart50TokenizerFast.from_pretrained(model_name)
     model = MBartForConditionalGeneration.from_pretrained(model_name)
     model.eval()
+
     if torch.cuda.is_available():
         model.to("cuda")
+
     return tokenizer, model
 
 st.title("🌐 Rinconada → English Translator")
 st.markdown("Translate Rinconada text into English using a fine-tuned **mBART50** model.")
 
 tokenizer, model = load_model()
+
+tokenizer.tgt_lang = TGT_LANG
 
 text = st.text_area("Enter Rinconada text:")
 
@@ -50,7 +56,7 @@ if st.button("Translate"):
                 with torch.no_grad():
                     outputs = model.generate(
                         **inputs,
-                        decoder_start_token_id=model.config.decoder_start_token_id,
+                        forced_bos_token_id=tokenizer.lang_code_to_id[TGT_LANG],
                         max_length=200,
                         num_beams=5,
                         early_stopping=True

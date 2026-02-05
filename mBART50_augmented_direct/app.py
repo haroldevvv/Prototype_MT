@@ -57,7 +57,7 @@ if st.button("Translate"):
                     outputs = model.generate(
                         **inputs,
                         forced_bos_token_id=tokenizer.lang_code_to_id[TGT_LANG],
-                        max_length=200,
+                        max_length=128,
                         num_beams=5,
                         early_stopping=True
                     )

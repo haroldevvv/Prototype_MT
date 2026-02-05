@@ -24,7 +24,7 @@ if st.sidebar.button("Clear Cache and Restart"):
 def load_model():
     model_name = "haroldevvv/my-mbart50-translation-model"
     tokenizer = MBart50TokenizerFast.from_pretrained(model_name)
-    model = MBartForConditionalGeneration.from_pretrained(model_name)
+    model = MBartForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16)
     model.eval()
 
     if torch.cuda.is_available():
